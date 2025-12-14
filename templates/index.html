@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Анализатор качества текста</title>
+
+    <!-- Подключение темного CSS -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='dark.css') }}"
+    />
+  </head>
+
+  <body>
+    <!-- Центральный контейнер -->
+    <div class="main-box">
+      <h1>Анализатор качества текста</h1>
+
+      <form method="POST">
+        <textarea
+          class="input-area"
+          name="text"
+          rows="6"
+          placeholder="Введите текст..."
+        >
+{{ text }}</textarea
+        >
+
+        <button class="btn-primary" type="submit">Анализировать</button>
+      </form>
+
+      {% if result %}
+      <div class="result-block">
+        <h2>Результат анализа</h2>
+
+        <table class="result-table">
+          <tbody>
+            {% for key, value in result.items() %}
+            <tr>
+              <td class="result-key">{{ key }}</td>
+              <td class="result-value">{{ value }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+    </div>
+  </body>
+</html>
