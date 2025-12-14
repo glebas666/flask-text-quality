@@ -2,48 +2,68 @@ import re
 import math
 from functools import lru_cache
 from pymorphy3 import MorphAnalyzer
+import os
 
-# ---------------------------------
-# ЗАГРУЗКА СПИСКОВ ИМЕН / СЛОВАРЕЙ
-# ---------------------------------
+import os
+from pymorphy3 import MorphAnalyzer
 
-def load_wordlist(path, split_by_comma=False):
+# -------------------------------------------------
+# БАЗОВАЯ ДИРЕКТОРИЯ ПРОЕКТА
+# -------------------------------------------------
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(BASE_DIR, "data")
+
+# -------------------------------------------------
+# УТИЛИТЫ ЗАГРУЗКИ
+# -------------------------------------------------
+
+def load_wordlist(filename, split_by_comma=False):
+    path = os.path.join(DATA_DIR, filename)
     try:
         with open(path, "r", encoding="utf-8") as f:
             if split_by_comma:
                 text = f.read().strip()
-                return set(x.strip().lower() for x in text.split(",") if x.strip())
+                return {x.strip().lower() for x in text.split(",") if x.strip()}
             else:
-                return set(line.strip().lower() for line in f if line.strip())
+                return {line.strip().lower() for line in f if line.strip()}
     except FileNotFoundError:
+        print(f"[WARN] File not found: {path}")
         return set()
 
-female_names = load_wordlist(r"C:\Users\1\Desktop\python_projects\ru_names\female_names_rus.txt")
-male_names = load_wordlist(r"C:\Users\1\Desktop\python_projects\ru_names\male_names_rus.txt")
-male_surnames = load_wordlist(r"C:\Users\1\Desktop\python_projects\ru_names\male_surnames_rus.txt")
+
+def load_reductions(filename):
+    path = os.path.join(DATA_DIR, filename)
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return {line.strip().lower() for line in f if line.strip()}
+    except FileNotFoundError:
+        print(f"[WARN] File not found: {path}")
+        return set()
+
+# -------------------------------------------------
+# ЗАГРУЗКА СЛОВАРЕЙ (ОДИН РАЗ ПРИ СТАРТЕ)
+# -------------------------------------------------
+
+female_names = load_wordlist("female_names_rus.txt")
+male_names = load_wordlist("male_names_rus.txt")
+male_surnames = load_wordlist("male_surnames_rus.txt")
 
 ALL_NAMES = female_names | male_names
 ALL_SURNAMES = male_surnames
 
 BAD_WORDS = load_wordlist(
-    r"C:\Users\1\Desktop\python_projects\bad_words\very-bad_words.txt",
+    "very-bad_words.txt",
     split_by_comma=True
 )
 
-RUSSIAN_DICT = load_wordlist(
-    r"C:\Users\1\Desktop\python_projects\exceptions\russian.txt"
-)
+RUSSIAN_DICT = load_wordlist("russian.txt")
 
-def load_reductions(path):
-    try:
-        with open(path, "r", encoding="utf-8") as f:
-            return set(line.strip().lower() for line in f if line.strip())
-    except FileNotFoundError:
-        return set()
-        
-REDUCTIONS = load_reductions(
-    r"C:\Users\1\Desktop\python_projects\exceptions\reductions.txt"
-)
+REDUCTIONS = load_reductions("reductions.txt")
+
+# -------------------------------------------------
+# MORPH ANALYZER (ОДИН РАЗ)
+# -------------------------------------------------
 
 morph = MorphAnalyzer()
 
